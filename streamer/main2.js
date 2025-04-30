@@ -1,0 +1,133 @@
+import Docker from 'dockerode';
+import { createYml, getPorts } from './functions.js';
+import fs, { readFileSync, writeFileSync } from 'fs';
+
+
+const docker = new Docker(); // Conectar com o Docker local
+
+
+// Função para verificar se o container já está rodando
+async function checkContainerRunning(containerName) {
+  try {
+    let containers = await docker.listContainers({ all: false }); // so containers ativos
+    let container = containers.some(container => container.Names.includes('/' + containerName));
+    if(container){
+        const ports_j = JSON.parse(fs.readFileSync('ports.json', 'utf-8'));
+        
+        return ports_j[containerName];
+    }
+    else{
+        containers = await docker.listContainers({ all: true});
+        const idle_cont = containers.filter(c => c.State !== 'running');
+        for (let c of idle_cont){
+            let con = docker.getContainer(c.Id);
+            await con.remove({force: true});
+            console.log(`Removido: ${c.Names[0]} (ID: ${c.Id})`);
+        }
+        return false; 
+    }
+  
+  } catch (err) {
+    console.error('Erro ao listar containers: ', err);
+    return false;
+  }
+}
+
+// Função para criar e iniciar um novo container
+async function createAndStartContainer(containerName, ip) {
+
+    const ports = await getPorts();
+    if(ports){
+      const file_yml = createYml(containerName, ip, ports);
+      if (file_yml){
+          try {
+              const container = await docker.createContainer({
+                Image: 'bluenviron/mediamtx', // A imagem do MediaMTX
+                name: containerName,
+                HostConfig: {
+                  NetworkMode: 'host', // Usar a rede do host
+                  Binds: [
+                    `/home/wni/projeto/streamer/containers_config/${containerName}.yml:/mediamtx.yml`, // Montando o arquivo de configuração
+                  ],
+                },
+              });
+          
+              await container.start(); // Iniciar o container
+              console.log(`Container ${containerName} criado e iniciado com sucesso!`);
+              const ports_j = JSON.parse(readFileSync('ports.json', 'utf-8'));
+              ports_j[containerName] = ports;
+              writeFileSync('ports.json', JSON.stringify(ports_j, null, 2)); 
+              
+              console.log(ports);
+              return true;
+            } catch (err) {
+              console.error('Erro ao criar o container:', err);
+            }
+      }
+      else{
+          console.log("Sem arquivo para configurar container")
+      }
+    }
+    else{
+      console.log("Sem portas disponíveis")
+    }
+}
+
+// Função principal que gerencia a criação do container quando solicitado
+async function handleRequest(containerName, ip) {
+  
+  // Verificar se o container já está rodando
+  const isRunning = await checkContainerRunning(containerName);
+  if (!isRunning) {
+    console.log(`Iniciando container para a câmera ${ip}`);
+    
+    return await createAndStartContainer(containerName, ip);
+  } else {
+    console.log(`Container para a câmera ${containerName} já está rodando.`);
+    console.log(isRunning);
+  }
+}
+
+async function removeStream(cam){
+    fs.unlink(`./containers_config/${cam}.yml`, (err) => {
+        if (err) console.log(err);
+        else console.log(`Arquivo ${cam}.yml deletado`)
+    });
+    const ports_j = JSON.parse(readFileSync('ports.json', 'utf-8'));
+    try {
+        delete ports_j[cam];
+        writeFileSync('ports.json', JSON.stringify(ports_j, null, 2));
+    }
+    catch (err) {
+        console.log(`${cam} não está em ports.json`);
+    }
+    const containers = await docker.listContainers({ all: true});
+    const container_info = containers.find(c => 
+        c.Names.some(name => name.replace(/^\//, '') === cam)
+    );
+    if(container_info){
+        const container = docker.getContainer(container_info.Id);
+        await container.remove({force: true});
+        console.log(`container ${cam} removido`);
+    }
+    else{
+        console.log("Container nao encontrado!")
+    }
+}
+//handleRequest('cam1', '172.16.0.181:554')
+
+removeStream('cam4')
+
+
+
+
+//'192.168.24.29:554'
+// Teste: ao chamar essa função, um container será criado se a câmera não estiver sendo transmitida
+//handleRequest('cam3', '192.168.24.29:554');
+//handleRequest('cam2', '192.168.24.3:554');
+//handleRequest('cam4', '172.16.0.180:554')
+
+//handleRequest('cam4', '172.16.0.180:554')
+
+//handleRequest('cam1', '172.16.0.181:554');
+
