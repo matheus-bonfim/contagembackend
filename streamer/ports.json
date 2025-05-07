@@ -1,16 +1,23 @@
 {
-  "cam1": {
+  "ch1": {
     "webrtcAddress": 8889,
     "rtspAddress": 8554,
     "rtpAddress": 8000,
     "rtcpAddress": 8001,
     "webrtcLocalUDPAddress": 8189
   },
-  "cam4": {
+  "25_CXT": {
     "webrtcAddress": 8890,
     "rtspAddress": 8555,
     "rtpAddress": 8002,
     "rtcpAddress": 8003,
     "webrtcLocalUDPAddress": 8190
+  },
+  "01_CXT": {
+    "webrtcAddress": 8891,
+    "rtspAddress": 8556,
+    "rtpAddress": 8004,
+    "rtcpAddress": 8005,
+    "webrtcLocalUDPAddress": 8191
   }
 }

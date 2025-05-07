@@ -63,7 +63,7 @@ async function createAndStartContainer(containerName, ip) {
               writeFileSync(ports_path, JSON.stringify(ports_j, null, 2)); 
               
               console.log(ports);
-              return true;
+              return ports;
             } catch (err) {
               console.error('Erro ao criar o container:', err);
             }
@@ -78,17 +78,18 @@ async function createAndStartContainer(containerName, ip) {
 }
 
 // Função principal que gerencia a criação do container quando solicitado
-export async function handleRequest(containerName, ip) {
-  
+export async function handleRequest(containerName, ip) { //retorna as portas ou undefined em caso de erro
+  console.log("container name:",containerName);
+  console.log("ip ", ip);
   // Verificar se o container já está rodando
-  const isRunning = await checkContainerRunning(containerName);
-  if (!isRunning) {
+  const ports = await checkContainerRunning(containerName); // se tiver rodando, retorna as portas, else retorna false
+  if (!ports) {
     console.log(`Iniciando container para a câmera ${ip}`);
-    
     return await createAndStartContainer(containerName, ip);
   } else {
     console.log(`Container para a câmera ${containerName} já está rodando.`);
-    console.log(isRunning);
+    console.log(ports);
+    return ports;
   }
 }
 
@@ -118,20 +119,31 @@ export async function removeStream(cam){
         console.log("Container nao encontrado!")
     }
 }
+
+export async function listActiveContainers(){
+  const containers = await docker.listContainers({ all: false }); // so containers ativos
+  const conNames = containers.map(con => con.Names[0].replace(/^\//, ''));
+  return conNames;
+}
 //handleRequest('cam1', '172.16.0.181:554')
 
-//removeStream('cam1')
+//removeStream('43.3_CXT')
+//removeStream('ch2')
+
 
 
 
 
 //'192.168.24.29:554'
 // Teste: ao chamar essa função, um container será criado se a câmera não estiver sendo transmitida
-//handleRequest('cam3', '192.168.24.29:554');
-//handleRequest('cam2', '192.168.24.3:554');
+//handleRequest('cam3', '192.168.24.29:554');    portao do parque 
+//handleRequest('cam2', '192.168.24.37:554');
 //handleRequest('cam4', '172.16.0.180:554')
 
 //handleRequest('cam4', '172.16.0.180:554')
 
 //handleRequest('cam1', '172.16.0.181:554');
 
+
+
+///preciso fazer um gerenciador de containers ativosossssosossososososososos

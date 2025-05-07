@@ -116,7 +116,7 @@ async function removeStream(cam){
 }
 //handleRequest('cam1', '172.16.0.181:554')
 
-removeStream('cam4')
+//removeStream('cam4')
 
 
 

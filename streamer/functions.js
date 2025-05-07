@@ -16,8 +16,8 @@ export function createYml(name, ip, ports){
     }
     const psw = encodeURIComponent("Wnidobrasil#22")
     //const psw = "admin";
-    const content = `\nwebrtcAddress: :${ports.webrtcAddress}\nwebrtcLocalUDPAddress: :${ports.webrtcLocalUDPAddress}\nrtspAddress: :${ports.rtspAddress}\nrtpAddress: :${ports.rtpAddress}\nrtcpAddress: :${ports.rtcpAddress}\npaths:\n  ${name}:\n    source: rtsp://admin:${psw}@${ip}/media/video1`
-    
+//    const content = `\nwebrtcAddress: :${ports.webrtcAddress}\nwebrtcLocalUDPAddress: :${ports.webrtcLocalUDPAddress}\nrtspAddress: :${ports.rtspAddress}\nrtpAddress: :${ports.rtpAddress}\nrtcpAddress: :${ports.rtcpAddress}\npaths:\n  ${name}:\n    source: rtsp://admin:${psw}@${ip}/media/video1`
+    const content = `\nwebrtcAddress: :${ports.webrtcAddress}\nwebrtcLocalUDPAddress: :${ports.webrtcLocalUDPAddress}\nrtspAddress: :${ports.rtspAddress}\nrtpAddress: :${ports.rtpAddress}\nrtcpAddress: :${ports.rtcpAddress}\npaths:\n  ${name}:\n    source: rtsp://admin:${psw}@${ip}`;  
     try {
         const fileName = path.join(con_config_path,`${name}.yml` );
         fs.appendFileSync(fileName, content);
