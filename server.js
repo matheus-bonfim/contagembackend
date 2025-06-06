@@ -1,14 +1,15 @@
 import express from 'express';
 import cors from 'cors';
-import { delete_waiting_cams, delete_cam_contagem, get_cam_ip, info_table, insert_cam_contagem, reset_counter, start_counting, stop_counting } from './datab.js';
+import { delete_waiting_cams, delete_cam_contagem, get_cam_ip, info_table, insert_cam_contagem, reset_counter, start_counting } from './datab.js';
 import { handleRequest, listActiveContainers, removeStream } from './streamer/main.js';
+import { stop_machine } from './api-machine.js';
 
 const HTTP_PORT = 3500
 
 
 export function createServer(){
     
-    setInterval(delete_waiting_cams, 1000);
+    //setInterval(delete_waiting_cams, 1000);
 
 
     const app = express();
@@ -79,13 +80,9 @@ export function createServer(){
     })
 
     app.get('/api/stopContagem', async (req, res) => {
-        const r = await stop_counting(req.query.ponto, req.query.p1, req.query.p2);
-        if(r.affectedRows > 0){
-            res.status(202).send("Contagem desativada");
-        }
-        else {
-            res.send("Erro");
-        }
+        const r = await stop_machine(req.query.ponto);
+        
+        res.status(202).send(r)
     })
     
     app.get('/api/deletecamContagem', async (req, res) => {
@@ -102,6 +99,6 @@ export function createServer(){
 
 const serverHTTP = createServer();
 const procSHttp = serverHTTP.listen(HTTP_PORT, () => {
-    console.log(`\n Server HTTP rodando em http://localhost:${HTTP_PORT}`);
+    console.log(`\n Server HTTP rodando em http://192.168.10.239:${HTTP_PORT}`);
 
 });

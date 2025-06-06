@@ -1,6 +1,7 @@
 import mysql from 'mysql2/promise';
 import { connDBConfig } from './config.js';
 import { removeStream } from './streamer/main.js';
+import { start_machine } from './api-machine.js';
 
 
 
@@ -84,17 +85,10 @@ export async function insert_cam_contagem(ponto){
 
 export async function start_counting(ponto, p1, p2){
     const q_str = "UPDATE countTable SET state = 1, p1 = ?, p2 = ? WHERE ponto = ?";
-    const res_db = query_db(q_str, [p1, p2, ponto]);
+    const res_db = await query_db(q_str, [p1, p2, ponto]);
+    if(res_db) await start_machine(ponto);
     return res_db;
 }
-
-export async function stop_counting(ponto){
-  const q_str = "UPDATE countTable SET state = 3 WHERE ponto = ?";
-  const res_db = query_db(q_str, [ponto]);
-  return res_db;
-}
-
-
 
 
 //insert_cam_contagem('43.1_CXT', '(122,4)', '(1000, 311)');
@@ -104,26 +98,28 @@ export async function delete_cam_contagem(ponto){
       "DELETE FROM countTable WHERE ponto = ?", "UPDATE countTable SET state = 2 WHERE ponto = ?"];
     try {
       const conn = await connectToDatabase();
-      let res_db = await conn.query(q_str[0], [ponto]);
-      if(res_db[0].state === 3){
-        res_db = await conn.query(q_str[1], [ponto]);
-        if(res_db && res_db.affectedRows > 0){
-          console.log(`Ponto ${ponto} deletado`);
+      let [res_db] = await conn.query(q_str[0], [ponto]);
+      if(res_db.length>0){
+
+        if(true){
+          [res_db] = await conn.query(q_str[1], [ponto]);
+          if(res_db && res_db.affectedRows > 0){
+            console.log(`Ponto ${ponto} deletado`);
+            removeStream(ponto);
+            conn.end();
+            return 'deleted';
+          }
+        }
+        else{
+          res_db = await conn.query(q_str[2], [ponto]);
+          console.log(`Ponto ${ponto} esperando ser deletado`);
           removeStream(ponto);
-          return 'deleted';
+          return 'waiting to delete';
         }
       }
-      else{
-        res_db = await conn.query(q_str[2], [ponto]);
-        console.log(`Ponto ${ponto} esperando ser deletado`);
-        removeStream(ponto);
-        return 'waiting to delete';
-      }
+
     } catch (err) {
       console.log(err)
-    }
-    finally{
-      conn.end();
     }
     return 'error';
 }

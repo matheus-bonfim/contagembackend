@@ -95,8 +95,8 @@ export async function handleRequest(containerName, ip) { //retorna as portas ou 
 
 export async function removeStream(cam){
     fs.unlink(path.join(con_config_path, `${cam}.yml`), (err) => {
-        if (err) console.log(err);
-        else console.log(`Arquivo ${cam}.yml deletado`)
+        if (err) console.log("Arquivo não encontrado");
+        else console.log(`Arquivo ${cam}.yml deletado`);
     });
     const ports_j = JSON.parse(readFileSync(ports_path, 'utf-8'));
     try {
