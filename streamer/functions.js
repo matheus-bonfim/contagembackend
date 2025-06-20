@@ -5,7 +5,7 @@ import { ports_path, con_config_path } from './main.js';
 import path from 'path';
 
 
-export function createYml(name, ip, ports){
+export function createYml(name, ip, ports, tipo){
 
     try{
         fs.copyFileSync(path.join(con_config_path, 'default.yml'), path.join(con_config_path, `${name}.yml`));
@@ -14,10 +14,23 @@ export function createYml(name, ip, ports){
         console.log("Erro ao copiar default", err);
         return false;
     }
-    const psw = encodeURIComponent("Wnidobrasil#22")
+    let psw, url_source;
+    if(tipo == 'DVR'){
+        let stream_number = name.split('_')[1];
+        psw = "wnidobrasil22";
+        url_source = `source: rtsp://mat:wnidobrasil22@${ip}:554/Streaming/Channels/${stream_number}`;
+        //source: rtsp://admin:${psw}@${ip}
+    }
+    else{
+        psw = encodeURIComponent("Wnidobrasil#22")
+        url_source = `source: rtsp://admin:${psw}@${ip}`;
+    }
+
+    //rtsp://mat:wnidobrasil22@172.16.0.213:554/Streaming/Channels/101
+    
     //const psw = "admin";
 //    const content = `\nwebrtcAddress: :${ports.webrtcAddress}\nwebrtcLocalUDPAddress: :${ports.webrtcLocalUDPAddress}\nrtspAddress: :${ports.rtspAddress}\nrtpAddress: :${ports.rtpAddress}\nrtcpAddress: :${ports.rtcpAddress}\npaths:\n  ${name}:\n    source: rtsp://admin:${psw}@${ip}/media/video1`
-    const content = `\nwebrtcAddress: :${ports.webrtcAddress}\nwebrtcLocalUDPAddress: :${ports.webrtcLocalUDPAddress}\nrtspAddress: :${ports.rtspAddress}\nrtpAddress: :${ports.rtpAddress}\nrtcpAddress: :${ports.rtcpAddress}\npaths:\n  ${name}:\n    source: rtsp://admin:${psw}@${ip}`;  
+    const content = `\nwebrtcAddress: :${ports.webrtcAddress}\nwebrtcLocalUDPAddress: :${ports.webrtcLocalUDPAddress}\nrtspAddress: :${ports.rtspAddress}\nrtpAddress: :${ports.rtpAddress}\nrtcpAddress: :${ports.rtcpAddress}\npaths:\n  ${name}:\n    ${url_source}`;  
     try {
         const fileName = path.join(con_config_path,`${name}.yml` );
         fs.appendFileSync(fileName, content);

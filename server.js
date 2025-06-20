@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
-import { delete_waiting_cams, delete_cam_contagem, get_cam_ip, info_table, insert_cam_contagem, reset_counter, start_counting } from './datab.js';
+import { delete_waiting_cams, delete_cam_contagem, get_cam_ip_tipo, info_table, insert_cam_contagem, reset_counter, start_counting } from './datab.js';
 import { handleRequest, listActiveContainers, removeStream } from './streamer/main.js';
-import { stop_machine } from './api-machine.js';
+import { restart_machine, stop_machine } from './api-machine.js';
 
 const HTTP_PORT = 3500
 
@@ -35,16 +35,18 @@ export function createServer(){
         res.json(res_db)
     })
 
-    app.get('/api/reset', async (req, res) => {
-        const res_db = await reset_counter(req.query.ponto);
-        res.json(res_db)
+    app.get('/api/restartMachine', async (req, res) => {
+        const resp = await restart_machine(req.query.ponto, req.query.zerar)
+        res.status(202).send(resp)
     })
+
+    
 
     app.get('/api/watch', async (req, res) => {
         let ports = false;
-        const ip = await get_cam_ip(req.query.cam);
+        const [ip, tipo] = await get_cam_ip_tipo(req.query.cam);
         if(ip){
-            ports = await handleRequest(req.query.cam, ip);
+            ports = await handleRequest(req.query.cam, ip, tipo);
         }
         if(ports){
             res.json(ports)
@@ -70,7 +72,7 @@ export function createServer(){
     })
 
     app.get('/api/startContagem', async (req, res) => {
-        const r = await start_counting(req.query.ponto, req.query.p1, req.query.p2);
+        const r = await start_counting(req.query.ponto, req.query.p1, req.query.p2, req.query.direction);
         if(r.affectedRows > 0){
             res.status(202).send("Contagem ativada");
         }

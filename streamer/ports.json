@@ -1,1 +1,16 @@
-{}
+{
+  "wniDVR_102": {
+    "webrtcAddress": 8889,
+    "rtspAddress": 8554,
+    "rtpAddress": 8002,
+    "rtcpAddress": 8003,
+    "webrtcLocalUDPAddress": 8190
+  },
+  "wniDVR_1302": {
+    "webrtcAddress": 8890,
+    "rtspAddress": 8555,
+    "rtpAddress": 8004,
+    "rtcpAddress": 8005,
+    "webrtcLocalUDPAddress": 8191
+  }
+}

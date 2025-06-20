@@ -39,8 +39,8 @@ export const start_machine = async (ponto) => {
 export const stop_machine = async (ponto) => {
     return await get(ApiMachine, '/stopMachine', {params:{ponto: ponto}})
 }
-export const restart_machine = async (ponto) => {
-    return 
+export const restart_machine = async (ponto, zerar) => {
+    return await get(ApiMachine, '/restartMachine', {params:{ponto: ponto, zerar: zerar}})
 }
 
 export const get_info_cam = async (ponto) => {

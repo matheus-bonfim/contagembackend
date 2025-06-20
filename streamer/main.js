@@ -38,11 +38,11 @@ async function checkContainerRunning(containerName) {
 }
 
 // Função para criar e iniciar um novo container
-async function createAndStartContainer(containerName, ip) {
+async function createAndStartContainer(containerName, ip, tipo) {
 
     const ports = await getPorts();
     if(ports){
-      const file_yml = createYml(containerName, ip, ports);
+      const file_yml = createYml(containerName, ip, ports, tipo);
       if (file_yml){
           try {
               const container = await docker.createContainer({
@@ -78,14 +78,14 @@ async function createAndStartContainer(containerName, ip) {
 }
 
 // Função principal que gerencia a criação do container quando solicitado
-export async function handleRequest(containerName, ip) { //retorna as portas ou undefined em caso de erro
+export async function handleRequest(containerName, ip, tipo) { //retorna as portas ou undefined em caso de erro
   console.log("container name:",containerName);
   console.log("ip ", ip);
   // Verificar se o container já está rodando
   const ports = await checkContainerRunning(containerName); // se tiver rodando, retorna as portas, else retorna false
   if (!ports) {
     console.log(`Iniciando container para a câmera ${ip}`);
-    return await createAndStartContainer(containerName, ip);
+    return await createAndStartContainer(containerName, ip, tipo);
   } else {
     console.log(`Container para a câmera ${containerName} já está rodando.`);
     console.log(ports);
