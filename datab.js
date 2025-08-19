@@ -10,7 +10,7 @@ const connectionConfig = connDBConfig;
 async function connectToDatabase() {
   
   try {
-    const connection = await mysql.createConnection(connectionConfig);
+    const connection = mysql.createPool(connectionConfig);
     return connection; 
   } catch (err) {
     console.error('Erro ao conectar:', err);
@@ -83,9 +83,9 @@ export async function insert_cam_contagem(ponto){
     return "Erro na base de dados";    
 }
 
-export async function start_counting(ponto, p1, p2, direction){
-    const q_str = "UPDATE countTable SET state = 1, p1 = ?, p2 = ?, direction = ? WHERE ponto = ?";
-    const res_db = await query_db(q_str, [p1, p2, direction, ponto]);
+export async function start_counting(ponto, p1, p2, direction, fromHour, toHour){
+    const q_str = "UPDATE countTable SET state = 1, p1 = ?, p2 = ?, direction = ?, fromTime = ?, toTime = ? WHERE ponto = ?";
+    const res_db = await query_db(q_str, [p1, p2, direction, fromHour, toHour, ponto]);
     if(res_db) await start_machine(ponto);
     return res_db;
 }
@@ -94,28 +94,23 @@ export async function start_counting(ponto, p1, p2, direction){
 //insert_cam_contagem('43.1_CXT', '(122,4)', '(1000, 311)');
 
 export async function delete_cam_contagem(ponto){ 
-    const q_str = ["SELECT state FROM countTable WHERE ponto = ?",
-      "DELETE FROM countTable WHERE ponto = ?", "UPDATE countTable SET state = 2 WHERE ponto = ?"];
+    const q_str = [
+      "SELECT state FROM countTable WHERE ponto = ?",
+      "DELETE FROM countTable WHERE ponto = ?", 
+      "DELETE FROM countTable_dates WHERE ponto = ?"
+    ];
     try {
       await stop_machine(ponto)
       const conn = await connectToDatabase();
       let [res_db] = await conn.query(q_str[0], [ponto]);
-      if(res_db.length>0){
-
-        if(true){
-          [res_db] = await conn.query(q_str[1], [ponto]);
-          if(res_db && res_db.affectedRows > 0){
-            console.log(`Ponto ${ponto} deletado`);
-            removeStream(ponto);
-            conn.end();
-            return 'deleted';
-          }
-        }
-        else{
-          res_db = await conn.query(q_str[2], [ponto]);
-          console.log(`Ponto ${ponto} esperando ser deletado`);
+      if(res_db.length>0){  
+        [res_db] = await conn.query(q_str[1], [ponto]);
+        await conn.query(q_str[2], [ponto]);
+        if(res_db && res_db.affectedRows > 0){
+          console.log(`Ponto ${ponto} deletado`);
           removeStream(ponto);
-          return 'waiting to delete';
+          conn.end();
+          return 'deleted'; 
         }
       }
 

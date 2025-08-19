@@ -15,15 +15,22 @@ export function createYml(name, ip, ports, tipo){
         return false;
     }
     let psw, url_source;
-    if(tipo == 'DVR'){
+    if(tipo === 'DVR'){
         let stream_number = name.split('_')[1];
         psw = "wnidobrasil22";
-        url_source = `source: rtsp://mat:wnidobrasil22@${ip}:554/Streaming/Channels/${stream_number}`;
+        //url_source = `source: rtsp://mat:wnidobrasil22@${ip}:554/Streaming/Channels/${stream_number}`;
+        url_source = `source: rtsp://mat:wnidobrasil22@${ip}:554`;
         //source: rtsp://admin:${psw}@${ip}
     }
-    else{
+    else if (tipo === 'LPR'){
         psw = encodeURIComponent("Wnidobrasil#22")
-        url_source = `source: rtsp://admin:${psw}@${ip}`;
+        url_source = `source: rtsp://admin:${psw}@${ip}:554/cam/realmonitor?channel=1&subtype=1`;
+    }
+    else{
+        //psw = encodeURIComponent("Wnidobrasil#22")
+        psw = encodeURIComponent("Wnidobrasil!20");
+        url_source = `source: rtsp://bosch:${psw}@${ip}:25552`;
+        //url_source = `source: rtsp://admin:${psw}@${ip}:554/media/video3`;
     }
 
     //rtsp://mat:wnidobrasil22@172.16.0.213:554/Streaming/Channels/101

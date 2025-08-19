@@ -9,7 +9,29 @@ export const con_config_path = './streamer/containers_config';
 
 const docker = new Docker(); // Conectar com o Docker local
 
-
+export async function getAllContainers(agingTime){
+  const time = Date.now() 
+  try{
+    let containers = await docker.listContainers({ all: true });
+    for (let container of containers){
+      let conObj = docker.getContainer(container.Id);
+      let data = await conObj.inspect();
+      let conName = data.Name.replace('/', '');
+      if (container.State !== 'running'){
+        await removeStream(conName);
+      }
+      else{
+        let timestamp = new Date(data.Created).getTime();
+        if (time - timestamp > agingTime){
+          await removeStream(conName);
+        }
+      }
+    }
+  }
+  catch (error) {
+    console.log(error);
+  }
+}
 // Função para verificar se o container já está rodando
 async function checkContainerRunning(containerName) {
   try {
