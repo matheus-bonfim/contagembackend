@@ -4,6 +4,14 @@ const ApiContagem = axios.create({
     baseURL: 'http://172.16.0.150:3500/api'
 });
 
+const ApiRedirecionador = axios.create({
+    baseURL: 'http://localhost:2222/api'
+});
+
+const ApiBackendLPR = axios.create({
+    baseURL: 'http://189.4.2.61:5000/api'
+})
+
 const ApiDB = axios.create({
     baseURL: 'http://172.16.0.150:5000/api'
 });
@@ -32,6 +40,11 @@ const get = async (api, path, params=null) => {
     }
 }
 
+
+
+export const get_url_stream_machine = async (ip, ponto, tipo) => {
+    return await get(ApiRedirecionador, '/getRTSP_URL', {params: {ponto: ponto, ip: ip, tipo: tipo}});
+}
 
 export const start_machine = async (ponto) => {
     return await get(ApiMachine, '/startMachine', {params: {ponto: ponto}});

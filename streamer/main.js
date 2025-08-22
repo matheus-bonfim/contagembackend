@@ -169,3 +169,6 @@ export async function listActiveContainers(){
 
 
 ///preciso fazer um gerenciador de containers ativosossssosossososososososos
+
+
+//getAllContainers(100)

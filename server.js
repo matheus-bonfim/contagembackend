@@ -54,7 +54,7 @@ export function createServer(){
         let ports = false;
         const [ip, tipo] = await get_cam_ip_tipo(req.query.cam);
         if(ip){
-            ports = await handleRequest(req.query.cam, ip, tipo);
+            //ports = await handleRequest(req.query.cam, ip, tipo);
         }
         if(ports){
             res.json(ports)
@@ -87,7 +87,7 @@ export function createServer(){
             fromHour = null;
             toHour = null;
         }
-        const r = await start_counting(req.query.ponto, req.query.p1, req.query.p2, req.query.direction, fromHour, toHour);
+        const r = await start_counting(req.query.ponto, req.query.p1, req.query.p2, req.query.direction, fromHour, toHour, req.query.ip, req.query.tipo);
         if(r.affectedRows > 0){
             res.status(202).send("Contagem ativada");
         }
@@ -120,8 +120,6 @@ export function createServer(){
     return app
 }
 
-setInterval(getAllContainers, 1000 * 60 * 15, containerAgingTime)
-getAllContainers(3600);
 const serverHTTP = createServer();
 const procSHttp = serverHTTP.listen(HTTP_PORT, () => {
     console.log(`\n Server HTTP rodando em http://192.168.10.239:${HTTP_PORT}`);
